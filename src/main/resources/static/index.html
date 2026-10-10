@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Support Ticket Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 10px;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding: 24px 16px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            flex: 1;
+            min-width: 140px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 850px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.15s;
+            background: #fff;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 85px;
+        }
+
+        button.btn-primary {
+            width: 100%;
+            background: var(--primary);
+            color: #fff;
+            padding: 11px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        button.btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .ticket-item {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .ticket-item:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+
+        .ticket-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-OPEN { background: #e0f2fe; color: #0284c7; }
+        .badge-IN_PROGRESS { background: #fef3c7; color: #d97706; }
+        .badge-WAITING_FOR_USER { background: #f3e8ff; color: #9333ea; }
+        .badge-RESOLVED { background: #dcfce7; color: #16a34a; }
+        .badge-CLOSED { background: #f1f5f9; color: #64748b; }
+
+        .badge-priority-LOW { background: #f1f5f9; color: #475569; }
+        .badge-priority-MEDIUM { background: #e0e7ff; color: #4338ca; }
+        .badge-priority-HIGH { background: #ffedd5; color: #ea580c; }
+        .badge-priority-CRITICAL { background: #fee2e2; color: #dc2626; }
+
+        .ticket-desc {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+        }
+
+        .ticket-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ticket-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-action {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-action:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-resolve {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: #15803d;
+        }
+        .btn-resolve:hover {
+            background: #bbf7d0;
+        }
+
+        .success-msg {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #15803d;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>🎫 IT Support System</h1>
+            <p style="color: var(--text-muted); font-size: 14px;">Übersichtliche Ticket-Erfassung & Status-Tracking</p>
+        </div>
+        <div>
+            <a href="/swagger-ui.html" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 13px; font-weight: 500;">
+                🛠️ Swagger API Docs öffnen &rarr;
+            </a>
+        </div>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="stat-number" id="count-total">0</div>
+            <div class="stat-label">Gesamte Tickets</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="count-open" style="color: #0284c7;">0</div>
+            <div class="stat-label">Offen</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="count-progress" style="color: #d97706;">0</div>
+            <div class="stat-label">In Bearbeitung</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="count-resolved" style="color: #16a34a;">0</div>
+            <div class="stat-label">Gelöst</div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- FORMULAR: NEUES TICKET -->
+        <div class="card">
+            <h2>➕ Neues Ticket erstellen</h2>
+            
+            <div id="success-alert" class="success-msg">
+                ✅ Ticket erfolgreich eingereicht!
+            </div>
+
+            <form id="create-ticket-form">
+                <div class="form-group">
+                    <label for="title">Problem / Titel *</label>
+                    <input type="text" id="title" placeholder="z. B. Monitor flackert bei HDMI" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Kategorie *</label>
+                    <select id="category" required>
+                        <option value="1">Hardware (Laptop, Monitor, Dockingstation)</option>
+                        <option value="2">Software & Lizenzen (IDE, Office, VPN-Tool)</option>
+                        <option value="3">Netzwerk & VPN (WLAN, Router, Verbindung)</option>
+                        <option value="4">Zugriff & Berechtigungen (GitLab, Jira, Server)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priorität *</label>
+                    <select id="priority" required>
+                        <option value="LOW">Niedrig (Hat Zeit)</option>
+                        <option value="MEDIUM" selected>Mittel (Normales Problem)</option>
+                        <option value="HIGH">Hoch (Wichtig für Tagesarbeit)</option>
+                        <option value="CRITICAL">Kritisch (Kompletter Ausfall)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="creator">Gemeldet von *</label>
+                    <select id="creator" required>
+                        <option value="4">dev.schmidt (Software Entwickler)</option>
+                        <option value="5">hr.fischer (Human Resources)</option>
+                        <option value="1">admin (IT Operations)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Beschreibung *</label>
+                    <textarea id="description" placeholder="Genaue Details zum Problem..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary" id="btn-submit">Ticket absenden</button>
+            </form>
+        </div>
+
+        <!-- LISTE ALLER TICKETS -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2>📋 Aktuelle Support-Tickets</h2>
+                <button class="btn-action" onclick="loadTickets()">🔄 Aktualisieren</button>
+            </div>
+
+            <div id="tickets-container">
+                <div class="empty-state">Lade Tickets...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/v1/tickets';
+
+    // 1. Tickets laden & anzeigen
+    async function loadTickets() {
+        const container = document.getElementById('tickets-container');
+        try {
+            const res = await fetch(API_URL);
+            if (!res.ok) throw new Error('Fehler beim Abrufen der Tickets');
+            const tickets = await res.json();
+
+            // Stats aktualisieren
+            document.getElementById('count-total').textContent = tickets.length;
+            document.getElementById('count-open').textContent = tickets.filter(t => t.status === 'OPEN').length;
+            document.getElementById('count-progress').textContent = tickets.filter(t => t.status === 'IN_PROGRESS').length;
+            document.getElementById('count-resolved').textContent = tickets.filter(t => t.status === 'RESOLVED').length;
+
+            if (tickets.length === 0) {
+                container.innerHTML = '<div class="empty-state">Keine Tickets vorhanden.</div>';
+                return;
+            }
+
+            container.innerHTML = tickets.map(t => `
+                <div class="ticket-item">
+                    <div class="ticket-header">
+                        <div>
+                            <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">#${t.id}</span>
+                            <span class="ticket-title">${escapeHtml(t.title)}</span>
+                        </div>
+                        <div class="badges">
+                            <span class="badge badge-${t.status}">${translateStatus(t.status)}</span>
+                            <span class="badge badge-priority-${t.priority}">${t.priority}</span>
+                        </div>
+                    </div>
+                    <div class="ticket-desc">${escapeHtml(t.description)}</div>
+                    <div class="ticket-meta">
+                        <div>
+                            📁 <strong>${t.categoryName || 'Allgemein'}</strong> &bull; 
+                            👤 Gemeldet von: <em>${t.createdByUsername || 'Unbekannt'}</em>
+                            ${t.assignedToUsername ? ` &bull; 🛠️ Bearbeiter: <strong>${t.assignedToUsername}</strong>` : ''}
+                        </div>
+                        <div class="ticket-actions">
+                            ${t.status === 'OPEN' ? `
+                                <button class="btn-action" onclick="assignToMe(${t.id})">Übernehmen</button>
+                            ` : ''}
+                            ${t.status === 'IN_PROGRESS' ? `
+                                <button class="btn-action btn-resolve" onclick="resolveTicket(${t.id})">Gelöst</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            container.innerHTML = `<div class="empty-state" style="color: #dc2626;">Konnte Tickets nicht laden. Läuft der Server auf Port 8080?</div>`;
+        }
+    }
+
+    // 2. Ticket erstellen
+    document.getElementById('create-ticket-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.textContent = 'Wird gesendet...';
+
+        const payload = {
+            title: document.getElementById('title').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            categoryId: parseInt(document.getElementById('category').value),
+            priority: document.getElementById('priority').value,
+            createdById: parseInt(document.getElementById('creator').value)
+        };
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                alert('Fehler: ' + (errData.message || 'Ungültige Eingabe'));
+                return;
+            }
+
+            // Formular zurücksetzen & Feedback anzeigen
+            document.getElementById('title').value = '';
+            document.getElementById('description').value = '';
+            
+            const alertBox = document.getElementById('success-alert');
+            alertBox.style.display = 'block';
+            setTimeout(() => alertBox.style.display = 'none', 3500);
+
+            // Liste sofort neu laden
+            loadTickets();
+
+        } catch (err) {
+            alert('Verbindungsfehler beim Erstellen des Tickets.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Ticket absenden';
+        }
+    });
+
+    // 3. Ticket übernehmen (Support Agent meyer ID 2 zuweisen)
+    async function assignToMe(ticketId) {
+        try {
+            const res = await fetch(`${API_URL}/${ticketId}/assign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    assigneeId: 2, // agent.meyer
+                    assignedById: 1 // admin
+                })
+            });
+            if (res.ok) {
+                loadTickets();
+            } else {
+                alert('Zuweisung fehlgeschlagen');
+            }
+        } catch (err) {
+            alert('Fehler beim Zuweisen.');
+        }
+    }
+
+    // 4. Ticket als gelöst markieren
+    async function resolveTicket(ticketId) {
+        try {
+            const res = await fetch(`${API_URL}/${ticketId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    newStatus: 'RESOLVED',
+                    changedById: 2,
+                    reason: 'Problem behoben und getestet'
+                })
+            });
+            if (res.ok) {
+                loadTickets();
+            } else {
+                const data = await res.json();
+                alert('Fehler: ' + (data.message || 'Status konnte nicht geändert werden.'));
+            }
+        } catch (err) {
+            alert('Fehler beim Ändern des Status.');
+        }
+    }
+
+    function translateStatus(s) {
+        const map = {
+            'OPEN': 'Offen',
+            'IN_PROGRESS': 'In Bearbeitung',
+            'WAITING_FOR_USER': 'Wartet auf User',
+            'RESOLVED': 'Gelöst',
+            'CLOSED': 'Geschlossen'
+        };
+        return map[s] || s;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Beim Laden der Seite Tickets sofort abrufen
+    loadTickets();
+</script>
+
+</body>
+</html>
